@@ -152,27 +152,26 @@ it.each(webRuntimeCancellationCases)(
       stdio: ["ignore", "pipe", "pipe"],
     });
     const closed = once(child, "close");
+    let stderr = "";
     let stdout = "";
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", (chunk: string) => {
+      stderr += chunk;
+    });
     child.stdout.setEncoding("utf8");
     child.stdout.on("data", (chunk: string) => {
       stdout += chunk;
     });
     const timeout = setTimeout(() => child.kill("SIGKILL"), 10_000);
     try {
-      let contactTimeout: NodeJS.Timeout | undefined;
-      try {
-        await Promise.race([
-          contacted,
-          new Promise<never>((_resolve, reject) => {
-            contactTimeout = setTimeout(
-              () => reject(new Error("CLI did not contact the CDP fixture")),
-              5_000,
-            );
-          }),
-        ]);
-      } finally {
-        if (contactTimeout !== undefined) clearTimeout(contactTimeout);
-      }
+      await Promise.race([
+        contacted,
+        closed.then(([exitCode, terminationSignal]) => {
+          throw new Error(
+            `CLI exited before contacting the CDP fixture (exit code ${String(exitCode)}, signal ${String(terminationSignal)}): ${stderr}`,
+          );
+        }),
+      ]);
       child.kill(signal);
       const [exitCode, terminationSignal] = await closed;
       expect(terminationSignal).toBeNull();
