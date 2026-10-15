@@ -9,17 +9,20 @@ import {
 } from "./ProcessScenarioRuntimeValidation.js";
 import { parseProcessScenario } from "../../domain/process/processScenario.js";
 
-it("preserves the caller-selected executable symlink for process invocation", async () => {
-  const root = await mkdtemp(join(tmpdir(), "rea-process-executable-alias-"));
-  try {
-    const alias = join(root, "chosen-node");
-    await symlink(process.execPath, alias);
+it.skipIf(process.platform === "win32")(
+  "preserves the caller-selected executable symlink for process invocation",
+  async () => {
+    const root = await mkdtemp(join(tmpdir(), "rea-process-executable-alias-"));
+    try {
+      const alias = join(root, "chosen-node");
+      await symlink(process.execPath, alias);
 
-    await expect(resolveExecutable(alias, root, "")).resolves.toBe(alias);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
+      await expect(resolveExecutable(alias, root, "")).resolves.toBe(alias);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+);
 
 it("retains the selected missing working directory and OS reason", async () => {
   const selected = join(tmpdir(), "rea-process-missing-cwd-unique");

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -168,7 +169,7 @@ describe("Linux Hopper installation", () => {
         launcherPath: "/opt/hopper/bin/Hopper",
       });
       expect(host.installed).toEqual([
-        { family, archive: `/tmp/rea test/hopper.${family}` },
+        { family, archive: join("/tmp/rea test", `hopper.${family}`) },
       ]);
       expect(host.cleaned).toEqual(["/tmp/rea test"]);
     },

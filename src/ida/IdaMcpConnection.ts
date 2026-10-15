@@ -123,6 +123,12 @@ export const createIdaMcpConnection = (
             ...Object.fromEntries(
               DEFAULT_INHERITED_ENV_VARS.map((key) => [key, ""]),
             ),
+            // Windows cannot start even an absolute Node executable without its
+            // system root. Preserve only this non-secret OS bootstrap value.
+            ...(process.platform === "win32" &&
+            process.env.SYSTEMROOT !== undefined
+              ? { SYSTEMROOT: process.env.SYSTEMROOT }
+              : {}),
             ...Object.fromEntries(
               Object.entries(snapshotEnvironment(environment)).filter(
                 (entry): entry is [string, string] => entry[1] !== undefined,

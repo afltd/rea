@@ -8,26 +8,50 @@ import { HopperProvider } from "./HopperProvider.js";
 describe("Hopper provider discovery", () => {
   it("reports bounded launcher availability without starting Hopper", () => {
     const available = provider(process.execPath).inspectAvailability();
-    expect(available).toEqual({
-      status: "available",
-      code: null,
-      reason: null,
-      diagnostics: {
-        launcher_path: process.execPath,
-        platform: process.platform,
-      },
-    });
+    expect(available).toEqual(
+      process.platform === "win32"
+        ? {
+            status: "unavailable",
+            code: "unsupported_host",
+            reason: "Hopper integration is not supported on win32.",
+            diagnostics: {
+              launcher_path: process.execPath,
+              platform: process.platform,
+            },
+          }
+        : {
+            status: "available",
+            code: null,
+            reason: null,
+            diagnostics: {
+              launcher_path: process.execPath,
+              platform: process.platform,
+            },
+          },
+    );
 
     const missingPath = "/missing/rea-hopper-launcher";
-    expect(provider(missingPath).inspectAvailability()).toEqual({
-      status: "unavailable",
-      code: "executable_missing",
-      reason: `Hopper launcher is missing or not executable: ${missingPath}`,
-      diagnostics: {
-        launcher_path: missingPath,
-        platform: process.platform,
-      },
-    });
+    expect(provider(missingPath).inspectAvailability()).toEqual(
+      process.platform === "win32"
+        ? {
+            status: "unavailable",
+            code: "unsupported_host",
+            reason: "Hopper integration is not supported on win32.",
+            diagnostics: {
+              launcher_path: missingPath,
+              platform: process.platform,
+            },
+          }
+        : {
+            status: "unavailable",
+            code: "executable_missing",
+            reason: `Hopper launcher is missing or not executable: ${missingPath}`,
+            diagnostics: {
+              launcher_path: missingPath,
+              platform: process.platform,
+            },
+          },
+    );
   });
 
   it("separates target kind, format, and architecture support", () => {

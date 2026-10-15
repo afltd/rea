@@ -62,21 +62,20 @@ if (
   );
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const architecture = process.argv[2] === "--x86" ? "x86" : "x86_64";
+const architecture = process.argv.includes("--x86") ? "x86" : "x86_64";
+const dll = process.argv.includes("--dll");
 const targetPath = resolve(
   root,
   "build",
   "fixtures",
-  architecture === "x86"
-    ? "rea-ghidra-windows-x86.exe"
-    : "rea-ghidra-windows.exe",
+  `rea-ghidra-windows${architecture === "x86" ? "-x86" : ""}.${dll ? "dll" : "exe"}`,
 );
 const target = await parseBinaryTarget(targetPath);
 if (
   !target.ok ||
   target.value.format !== "pe" ||
   target.value.architecture !== architecture ||
-  target.value.executableRole !== "application" ||
+  target.value.executableRole !== (dll ? "shared-library" : "application") ||
   target.value.managed !== false
 )
   throw new Error(
@@ -155,6 +154,10 @@ try {
   );
   if (callee === undefined)
     throw new Error("Windows fixture exposed no controlled callee");
+  if (dll && callee.value !== "rea_answer")
+    throw new Error(
+      "Windows DLL analysis lost the named export without an entry point",
+    );
   const pseudoCode = await functionOperation("procedure_pseudo_code", {
     procedure: callee.value,
   });
@@ -243,6 +246,8 @@ try {
       managed: target.value.managed,
       sha256: target.value.sha256,
     },
+    known_return_value: 42,
+    ...(dll ? { exported_procedure: callee.value, entry_point_rva: 0 } : {}),
     transport: "authenticated-loopback-tcp",
     operations: [...observed].sort((left, right) => left.localeCompare(right)),
     cleanup: "complete",
@@ -254,7 +259,7 @@ try {
     limitations: [
       "approved-non-sensitive-fixtures-only",
       "windows-x64-local-ntfs-only",
-      "native-x86-and-x86-64-pe-applications-only",
+      "native-x86-and-x86-64-pe-applications-and-dlls-only",
       "no-gui-or-mutation-authority",
     ],
   };

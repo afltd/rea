@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
@@ -75,8 +76,10 @@ describe("macOS Hopper installation", () => {
     const host = new FakeMacHopperHost();
     await expect(installMacHopper({}, host)).resolves.toEqual({
       status: "installed",
-      launcherPath:
-        "/home/user/Applications/Hopper Disassembler.app/Contents/MacOS/hopper",
+      launcherPath: join(
+        "/home/user/Applications/Hopper Disassembler.app",
+        "Contents/MacOS/hopper",
+      ),
     });
     expect(host.opens).toBe(1);
     expect(host.unmounts).toBe(1);

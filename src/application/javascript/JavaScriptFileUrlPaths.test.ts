@@ -10,15 +10,17 @@ import { javascriptApplicationAnalysisResultSchema } from "../../domain/javascri
 import { staticPath } from "../../domain/javascript/javascriptStaticAnalysisHelpers.js";
 import { analyzeJavaScriptApplication } from "./JavaScriptApplicationService.js";
 
-const urlCases = [
-  ["./preload%20name.cjs", "preload name.cjs", "main.mjs"],
-  ["./pr%C3%A9load.cjs", "préload.cjs", "main.mjs"],
-  ["./preload%3F%23.cjs", "preload?#.cjs", "main.mjs"],
-  ["./preload.cjs?cache=1#v2", "preload.cjs", "main.mjs"],
-  ["../preload.cjs?cache=1", "preload.cjs", "src/main.mjs"],
-  ["./sub/../preload.cjs", "preload.cjs", "main.mjs"],
-  ["./preload.cjs", "preload.cjs", "main.mjs"],
-] as const;
+const urlCases = (
+  [
+    ["./preload%20name.cjs", "preload name.cjs", "main.mjs"],
+    ["./pr%C3%A9load.cjs", "préload.cjs", "main.mjs"],
+    ["./preload%3F%23.cjs", "preload?#.cjs", "main.mjs"],
+    ["./preload.cjs?cache=1#v2", "preload.cjs", "main.mjs"],
+    ["../preload.cjs?cache=1", "preload.cjs", "src/main.mjs"],
+    ["./sub/../preload.cjs", "preload.cjs", "main.mjs"],
+    ["./preload.cjs", "preload.cjs", "main.mjs"],
+  ] as const
+).filter(([, target]) => process.platform !== "win32" || !target.includes("?"));
 
 const unknownExpressions = [
   'fileURLToPath(new URL("./invalid%.cjs", import.meta.url))',

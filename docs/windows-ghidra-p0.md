@@ -17,7 +17,7 @@ additional permission flag or degraded mode is required.
 - Node.js 22.x (>=22.19), 24.x (>=24.11), or 26+;
 - an operator-installed Ghidra 12.1.x distribution (verified with 12.1.4);
 - a 64-bit full JDK inside that installation's declared Java range (JDK 21 or newer, with no maximum, for current 12.1 releases);
-- an explicit native, non-managed, non-DLL x86 or x86-64 PE application; and
+- an explicit native, non-managed x86 or x86-64 PE application or DLL; and
 - the 25 read-only Ghidra inventory, memory, and function-analysis operations.
 
 Loaded memory reads and file offsets preserve Ghidra's observed source mappings.
@@ -100,9 +100,13 @@ and artifact SHA-256 before loading the package-owned addon. Native failure
 reasons remain distinct from a valid installation and an unsupported target.
 
 PE header classification and SHA-256 come from the same open file. The Windows
-provider admits native x86 and x86-64 PE applications and rejects unsupported roles,
+provider admits native x86 and x86-64 PE applications and DLLs and rejects unsupported roles,
 architectures, managed images, and malformed headers. The original selected
 source coordinate is preserved for native admission.
+
+DLLs use the same static import boundary as applications. Ghidra reads the private
+snapshot; REA does not call `LoadLibrary`, invoke `DllMain`, or execute exports.
+DLLs without an entry point are supported through their exported procedures.
 
 Admission opens and checks every path component without following a reparse
 point. It retains handles, verifies local NTFS semantics, and observes volume
@@ -159,8 +163,11 @@ artifact and manifest.
 npm run verify:windows-native
 npm run verify:ghidra:windows
 npm run verify:ghidra:windows -- --x86
+npm run verify:ghidra:windows -- --dll
+npm run verify:ghidra:windows -- --dll --x86
 npm run verify:ghidra:windows:package -- --x86
 npm run verify:ghidra:windows:package -- C:\fixtures\installed-rea C:\fixtures\sample.exe
+npm run verify:ghidra:windows:package -- C:\fixtures\installed-rea C:\fixtures\sample.dll
 ```
 
 The package lane must run with an ordinary, non-elevated user token. It exercises
@@ -168,6 +175,11 @@ CLI inspection and every admitted MCP operation, validates named canonical
 input/output contracts, checks the source digest stays unchanged, and verifies
 runtime cleanup. Use a source-owned fixture, one analysis process at a time,
 and a bounded heap for real-provider verification.
+
+The `--dll` fixture has a named `rea_answer` export returning 42 and no entry
+point. Both PE32 and PE32+ lanes verify that export, decompilation, all 25
+read-only bridge operations, and native cleanup. The application fixtures remain
+unchanged for regression coverage.
 
 The controlled GitHub workflow runs only default-branch code on its protected
 self-hosted Windows environment. A separate Linux job builds the matching
