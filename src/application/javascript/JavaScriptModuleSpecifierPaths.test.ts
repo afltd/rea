@@ -160,13 +160,17 @@ describe("module specifier punctuation", () => {
 
 describe("ESM module URL decoding", () => {
   it("resolves URL-encoded imports to the files loaded by Node", async () => {
-    const cases = [
-      ["./plain.mjs", "plain.mjs"],
-      ["./space%20name.mjs", "space name.mjs"],
-      ["./pr%C3%A9load.mjs", "préload.mjs"],
-      ["./name%3F%23.mjs", "name?#.mjs"],
-      ["./percent%2520.mjs?cache=1#v2", "percent%20.mjs"],
-    ] as const;
+    const cases = (
+      [
+        ["./plain.mjs", "plain.mjs"],
+        ["./space%20name.mjs", "space name.mjs"],
+        ["./pr%C3%A9load.mjs", "préload.mjs"],
+        ["./name%3F%23.mjs", "name?#.mjs"],
+        ["./percent%2520.mjs?cache=1#v2", "percent%20.mjs"],
+      ] as const
+    ).filter(
+      ([, target]) => process.platform !== "win32" || !target.includes("?"),
+    );
     const root = await createTestTempDirectory("rea-module-url-");
     const main = join(root, "main.mjs");
     await writeFile(
@@ -245,18 +249,22 @@ describe("ESM module URL decoding", () => {
   );
 });
 
-const packageEntryUrlCases = [
-  ["exports", "./actual%20file.cjs", "actual file.cjs"],
-  ["exports", "./actual.cjs?variant", "actual.cjs"],
-  ["exports", "./actual.cjs#variant", "actual.cjs"],
-  ["exports", "./actual%23file.cjs", "actual#file.cjs"],
-  ["exports", "./actual%3Ffile.cjs", "actual?file.cjs"],
-  ["exports", "./actual%252Ffile.cjs", "actual%2Ffile.cjs"],
-  ["exports", "./actual.cjs", "actual.cjs"],
-  ["main", "./actual%20file.cjs", "actual%20file.cjs"],
-  ["main", "./actual?file.cjs", "actual?file.cjs"],
-  ["main", "./actual#file.cjs", "actual#file.cjs"],
-] as const;
+const packageEntryUrlCases = (
+  [
+    ["exports", "./actual%20file.cjs", "actual file.cjs"],
+    ["exports", "./actual.cjs?variant", "actual.cjs"],
+    ["exports", "./actual.cjs#variant", "actual.cjs"],
+    ["exports", "./actual%23file.cjs", "actual#file.cjs"],
+    ["exports", "./actual%3Ffile.cjs", "actual?file.cjs"],
+    ["exports", "./actual%252Ffile.cjs", "actual%2Ffile.cjs"],
+    ["exports", "./actual.cjs", "actual.cjs"],
+    ["main", "./actual%20file.cjs", "actual%20file.cjs"],
+    ["main", "./actual?file.cjs", "actual?file.cjs"],
+    ["main", "./actual#file.cjs", "actual#file.cjs"],
+  ] as const
+).filter(
+  ([, , target]) => process.platform !== "win32" || !target.includes("?"),
+);
 
 it.each(["import", "require"] as const)(
   "matches Node %s across package exports and main path representations",

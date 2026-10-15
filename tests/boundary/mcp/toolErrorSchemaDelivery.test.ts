@@ -9,6 +9,15 @@ import { z } from "zod";
 import { connectLocalToolsMcp } from "../../fixtures/localToolsMcp.js";
 import { parseMcpToolError } from "../../fixtures/mcpToolError.js";
 
+const containsText = (value: unknown, expected: string): boolean => {
+  if (typeof value === "string") return value.includes(expected);
+  if (Array.isArray(value))
+    return value.some((item) => containsText(item, expected));
+  if (value !== null && typeof value === "object")
+    return Object.values(value).some((item) => containsText(item, expected));
+  return false;
+};
+
 it("delivers typed tool failures without violating the advertised success schema over stdio", async () => {
   const root = await mkdtemp(join(tmpdir(), "rea-tool-error-schema-"));
   onTestFinished(() => rm(root, { recursive: true, force: true }));
@@ -33,7 +42,7 @@ it("delivers typed tool failures without violating the advertised success schema
     const diagnostic = parseMcpToolError(reply);
     expect(diagnostic.error.message, request.name).not.toBe("");
     if ("path" in request.arguments || "input_path" in request.arguments)
-      expect(JSON.stringify(diagnostic), request.name).toContain(missing);
+      expect(containsText(diagnostic, missing), request.name).toBe(true);
     if (reply.structuredContent !== undefined) {
       const validate = new Ajv2020({
         strict: false,

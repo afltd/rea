@@ -1,3 +1,5 @@
+import { tmpdir } from "node:os";
+
 import { expect, it } from "vitest";
 
 import { snapshotRoots } from "./FilesystemSnapshot.js";
@@ -266,7 +268,7 @@ it("cancels filesystem snapshots before traversing declared roots", async () => 
     snapshotRoots(
       parseProcessScenario({
         ...base,
-        filesystem_observation_paths: ["/tmp"],
+        filesystem_observation_paths: [tmpdir()],
       }),
       controller.signal,
     ),

@@ -1,3 +1,5 @@
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { runSetup } from "./Setup.js";
@@ -18,7 +20,9 @@ describe("skill plan destinations", () => {
       result.plannedActions
         .filter(({ kind }) => kind === "install_skill")
         .map(({ target }) => target),
-    ).toEqual(["/fixture/home/.claude/skills/reverse-engineer-anything"]);
+    ).toEqual([
+      join("/fixture/home", ".claude/skills/reverse-engineer-anything"),
+    ]);
   });
 
   it("plans both shared and personal skill roots for mixed clients", async () => {
@@ -38,8 +42,8 @@ describe("skill plan destinations", () => {
         .filter(({ kind }) => kind === "install_skill")
         .map(({ target }) => target),
     ).toEqual([
-      "/fixture/home/.agents/skills/reverse-engineer-anything",
-      "/fixture/home/.claude/skills/reverse-engineer-anything",
+      join("/fixture/home", ".agents/skills/reverse-engineer-anything"),
+      join("/fixture/home", ".claude/skills/reverse-engineer-anything"),
     ]);
   });
 });

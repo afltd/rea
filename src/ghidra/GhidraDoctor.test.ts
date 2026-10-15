@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { runDoctor, type DoctorHost } from "../application/Doctor.js";
 import { createDoctorHostFixture } from "../application/Doctor.fixture.js";
 import { providerRegistrationEnvironment } from "../application/SetupRegistrationEnvironment.js";
-import { WINDOWS_NATIVE_AUTHORITY_UNAVAILABLE_REASON } from "../process/WindowsAuthority.js";
+import { windowsNativeAuthorityUnavailableReason } from "../process/WindowsAuthority.js";
 import {
   inspectGhidraInstallation,
   type GhidraInstallationHost,
@@ -12,6 +12,8 @@ import {
 import { projectGhidraDoctorInspection } from "./GhidraDoctor.js";
 
 const INSTALL = "/opt/ghidra_12.1.4_PUBLIC";
+const WINDOWS_NATIVE_AUTHORITY_UNAVAILABLE_REASON =
+  windowsNativeAuthorityUnavailableReason("win32");
 const installationHost = (
   overrides: Partial<GhidraInstallationHost> = {},
 ): GhidraInstallationHost => ({

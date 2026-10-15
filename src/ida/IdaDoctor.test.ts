@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
 import { inspectIdaRegistration } from "./IdaDoctor.js";
 import { providerRegistrationEnvironment } from "../application/SetupRegistrationEnvironment.js";
+import { privateRuntimeRootCapability } from "../process/PrivateRuntimeRoot.js";
 
 const roots: string[] = [];
 afterEach(async () => {
@@ -25,7 +26,7 @@ it("keeps IDA configuration for setup without copying transport credentials or c
   const inspection = inspectIdaRegistration(path);
   expect(inspection).toMatchObject({
     configured: true,
-    available: true,
+    available: privateRuntimeRootCapability().available,
     providerVersion: null,
   });
   expect(inspection.checks[0]?.detail).toContain("no IDA process was launched");

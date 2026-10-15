@@ -28,7 +28,7 @@ input.on('line', (line) => {
     ? { protocolVersion: request.params.protocolVersion, capabilities: { tools: {} }, serverInfo: { name: 'environment-producer', version: '1' } }
     : request.method === 'tools/list'
       ? { tools: [{ name: 'environment', inputSchema: { type: 'object' } }] }
-      : { content: [], structuredContent: { selected: process.env.REA_SELECTED_CONTEXT ?? null, registration: process.env.REA_REGISTRATION_CONTEXT ?? null, ambient: process.env.REA_AMBIENT_CONTEXT ?? null, home: process.env.HOME ?? null, path: process.env.PATH ?? null } };
+      : { content: [], structuredContent: { selected: process.env.REA_SELECTED_CONTEXT ?? null, registration: process.env.REA_REGISTRATION_CONTEXT ?? null, ambient: process.env.REA_AMBIENT_CONTEXT ?? null, home: process.env.HOME ?? null, path: process.env.PATH ?? null, systemRoot: process.env.SYSTEMROOT ?? null } };
   process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result }) + '\\n');
 });
 `,
@@ -68,6 +68,10 @@ input.on('line', (line) => {
               ? ""
               : null,
         path: selected === environment ? "/selected-path" : "",
+        systemRoot:
+          process.platform === "win32"
+            ? (process.env.SYSTEMROOT ?? null)
+            : null,
       });
     } finally {
       await connection.close();

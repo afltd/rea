@@ -14,6 +14,7 @@ import { createEvidence } from "../../src/domain/evidence.js";
 import { createEvidenceBundle } from "../../src/domain/evidenceBundle.js";
 import { createAnalysisExecution } from "../../src/application/AnalysisProvider.js";
 import { IDA_PROVIDER_IDENTITY } from "../../src/ida/IdaProviderCapabilities.js";
+import { privateRuntimeRootCapability } from "../../src/process/PrivateRuntimeRoot.js";
 
 const roots: string[] = [];
 afterEach(async () => {
@@ -39,7 +40,9 @@ describe("IDA provider composition", () => {
     const producer = new RecordingIdaMcp(target, "headless");
     const provider = new IdaProvider(config.value, {}, () => producer);
     expect(provider.inspectAvailability()).toMatchObject({
-      status: "available",
+      status: privateRuntimeRootCapability().available
+        ? "available"
+        : "unavailable",
       diagnostics: { live_connection_probed: false },
     });
     const resolution = await provider.resolveAnalysisProfile(target);
